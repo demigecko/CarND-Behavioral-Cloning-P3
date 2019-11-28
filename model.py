@@ -82,7 +82,7 @@ train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 train_generator = generator(train_samples, batch_size=batch_size)
 validation_generator = generator(validation_samples, batch_size=batch_size)
 
-number_valid_steps = math.ceil(len(validation_samples*3*2)
+number_valid_steps = math.ceil(len(validation_samples*3*2))
 steps_per_epoch = math.ceil(len(train_samples*3*2)/batch_size)
 
 model = model_nvidia(act='relu', d=0.5)
