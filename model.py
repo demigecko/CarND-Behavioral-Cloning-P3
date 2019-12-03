@@ -35,7 +35,7 @@ def model_nvidia(act='relu', d=0.5):
     model.add(Dropout(d))
     model.add(Conv2D(64, (3,3), activation=act))
     model.add(Dropout(d))
-    model.add(Conv2D(64, (3,3), activation=act))
+    model.add(Conv2D(64, (1,1), activation=act))
     model.add(Dropout(d))
     model.add(Flatten())
     model.add(Dense(100, activation=act))
@@ -43,6 +43,7 @@ def model_nvidia(act='relu', d=0.5):
     model.add(Dense(50, activation=act))
     model.add(Dropout(d))
     model.add(Dense(10, activation=act))
+    model.add(Dropout(d))
     model.add(Dense(1))
     return model
 
