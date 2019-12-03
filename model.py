@@ -1,9 +1,11 @@
 # note: my local desktop is Windows 10, so the format of the csv directory path is different from Mac 
 
+# set the parameters 
 correction =0.2; 
 validation_split = 0.2
 batch_size = 256
 
+# import the packages
 import os, platform, glob, csv, cv2
 import numpy as np
 import random
@@ -20,10 +22,8 @@ csv_path = 'C:\\Users\\hsiny\\GitHub\\data\\Ho_track2\\driving_log.csv'
 # I collected all the images in the same folder
 IMG_path = 'C:\\Users\\hsiny\\GitHub\\data\\Ho_track2\\IMG\\'
 
-def model_nvidia(act='relu', d=0.5):
-
-#    based on nVidia end-to-end driving model with ustomized activation and dropout
-    
+# the model based on nVidia end-to-end driving model with ustomized activation and dropout
+def model_nvidia(act='relu', d=0.5): 
     model = Sequential()
     model.add(Cropping2D(cropping=((50, 20), (0, 0)), input_shape=(160, 320, 3)))
     model.add(Lambda(lambda x: x/255-0.5, output_shape=(90, 320, 3)))
@@ -46,6 +46,7 @@ def model_nvidia(act='relu', d=0.5):
     model.add(Dense(1))
     return model
 
+# the generator 
 def generator(samples, batch_size=256):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
@@ -59,22 +60,26 @@ def generator(samples, batch_size=256):
                     factor=[0, 1, -1]    
                     #filename = IMG_path + batch_sample[j].split('/')[-1]  #Unix or Mac
                     filename = batch_sample[j].split('/')[-1] # window 
+                    # includes left, center, and right images with corresponding steering angle correction
                     measurement = round(float(batch_sample[3]) + factor[j]*correction,3); 
                     image = cv2.imread(filename)
                     images.append(image)
                     angles.append(measurement)
+                    # produce the mirror images 
                     images.append(cv2.flip(image,1))
                     angles.append(measurement*(-1))
             X_train = np.array(images)
             y_train = np.array(angles)
             yield sklearn.utils.shuffle(X_train, y_train)
-                        
+
+# data input                         
 samples = []
 with open(csv_path) as csvfile:
     reader = csv.reader(csvfile,delimiter=',')
     for line in reader:
         samples.append(line)
-
+        
+# set the train samples (0.8) and validation samples (0.2)
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
@@ -82,9 +87,11 @@ train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 train_generator = generator(train_samples, batch_size=batch_size)
 validation_generator = generator(validation_samples, batch_size=batch_size)
 
-number_valid_steps = math.ceil(len(validation_samples*3*2))
+# calculate the numbers of steps and stpes_per_epoch
+number_valid_steps = math.ceil(len(validation_samples*3*2)/batch_size)
 steps_per_epoch = math.ceil(len(train_samples*3*2)/batch_size)
 
+# run the model 
 model = model_nvidia(act='relu', d=0.5)
 model.compile(loss = 'mse', optimizer = 'adam')
 model.summary()
